@@ -4,10 +4,16 @@
  will not be shown, you would have to be root to see it all.)
 (Not all processes could be identified, non-owned process info
  will not be shown, you would have to be root to see it all.)
-Fri Mar 28 2025 14:54:01:52 GMT+0300 (EAT) -- Starting configuration console on http://localhost:45454
-Fri Mar 28 2025 14:54:03:596 GMT+0300 (EAT) -- [INFO] Started the BrowserStack Binary server on 45691, PID: 7854
-Fri Mar 28 2025 14:54:05:105 GMT+0300 (EAT) -- [SUCCESS] You can now access your local server(s) in our remote browser
+Tue Apr 01 2025 10:48:00:90 GMT+0300 (EAT) -- Starting configuration console on http://localhost:45454
+Tue Apr 01 2025 10:48:01:645 GMT+0300 (EAT) -- [INFO] Started the BrowserStack Binary server on 45691, PID: 316314
+Tue Apr 01 2025 10:48:02:651 GMT+0300 (EAT) -- [SUCCESS] You can now access your local server(s) in our remote browser
 
-Fri Mar 28 2025 14:54:07:276 GMT+0300 (EAT) -- Press Ctrl-C to exit
+Tue Apr 01 2025 10:48:02:943 GMT+0300 (EAT) -- Press Ctrl-C to exit
 
 
+Tue Apr 01 2025 11:26:13:822 GMT+0300 (EAT) -- Press Ctrl-C to exit
+
+
+Tue Apr 01 2025 11:34:27:79 GMT+0300 (EAT) -- Received runtime exception: Error: connect ETIMEDOUT 13.235.197.133:80
+    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1107:14)
+Tue Apr 01 2025 11:34:27:79 GMT+0300 (EAT) -- Exiting.

@@ -16,7 +16,7 @@ const NewRequestPage = () => {
 
   // Fetch products from API
   useEffect(() => {
-    axios.get('http://127.0.0.1:8000/products/products/') // Change URL as needed
+    axios.get('http://127.0.0.1:8000/products/api/products/') // Change URL as needed
       .then(response => {
         setAvailableProducts(response.data);
       })

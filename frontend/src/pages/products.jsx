@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { FiEye, FiEdit, FiTrash } from "react-icons/fi";
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [manufacturers, setManufacturers] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [showCategoryForm, setShowCategoryForm] = useState(false);
-  const [showManufacturerForm, setShowManufacturerForm] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isEdit, setIsEdit] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: "",
     description: "",
@@ -16,223 +18,243 @@ const ProductsPage = () => {
     category: "",
     manufacturer: "",
   });
-  const [newCategory, setNewCategory] = useState("");
-  const [newManufacturer, setNewManufacturer] = useState("");
 
   useEffect(() => {
-    // Fetch products, categories, and manufacturers when the page loads
-    axios.get("http://127.0.0.1:8000/products/api/products/") // Adjust to your API URL
-      .then((response) => {
-        setProducts(response.data);
-      })
-      .catch((error) => {
-        console.error("There was an error fetching the products!", error);
-      });
+    axios.get("http://127.0.0.1:8000/products/api/products/")
+      .then((response) => setProducts(response.data))
+      .catch((error) => console.error("Error fetching products!", error));
+console.log("ppppp",products.category)
+    axios.get("http://127.0.0.1:8000/category/api/Category/")
+      .then((response) => setCategories(response.data))
+      .catch((error) => console.error("Error fetching categories!", error));
 
-    // Fetch categories
-    axios.get("http://127.0.0.1:8000/api/categories/") // Adjust to your API URL
-      .then((response) => {
-        setCategories(response.data);
-      })
-      .catch((error) => {
-        console.error("There was an error fetching the categories!", error);
-      });
-
-    // Fetch manufacturers
-    axios.get("http://127.0.0.1:8000/api/manufacturers/") // Adjust to your API URL
-      .then((response) => {
-        setManufacturers(response.data);
-      })
-      .catch((error) => {
-        console.error("There was an error fetching the manufacturers!", error);
-      });
+    axios.get("http://127.0.0.1:8000//api/manufacturers/")
+      .then((response) => setManufacturers(response.data))
+      .catch((error) => console.error("Error fetching manufacturers!", error));
   }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewProduct((prevProduct) => ({
-      ...prevProduct,
-      [name]: value,
-    }));
+    setNewProduct((prevProduct) => ({ ...prevProduct, [name]: value }));
   };
 
-  const handleCategoryChange = (e) => {
-    setNewCategory(e.target.value);
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      axios.delete(`http://127.0.0.1:8000/products/api/products/${id}/`)
+        .then(() => setProducts(products.filter((product) => product.id !== id)))
+        .catch((error) => console.error("Error deleting product!", error));
+    }
   };
 
-  const handleManufacturerChange = (e) => {
-    setNewManufacturer(e.target.value);
+  const handleEdit = (product) => {
+    setSelectedProduct(product);
+    setIsEdit(true);
+    setShowModal(true);
+  };
+
+  const handleView = (product) => {
+    setSelectedProduct(product);
+    setIsEdit(false);
+    setShowModal(true);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post("http://127.0.0.1:8000/products/api/products/", newProduct) // Adjust to your API URL
+    axios.post("http://127.0.0.1:8000/products/api/products/", newProduct)
       .then((response) => {
-        setProducts((prevProducts) => [...prevProducts, response.data]);
-        setShowForm(false); // Close the form after successful submission
+        setProducts((prev) => [...prev, response.data]);
+        setShowForm(false);
       })
-      .catch((error) => {
-        console.error("There was an error adding the product!", error);
-      });
-  };
-
-  const handleAddCategory = () => {
-    axios.post("http://127.0.0.1:8000/api/categories/", { name: newCategory }) // Adjust to your API URL
-      .then((response) => {
-        setCategories((prevCategories) => [...prevCategories, response.data]);
-        setNewCategory("");
-        setShowCategoryForm(false); // Close the form after successful addition
-      })
-      .catch((error) => {
-        console.error("There was an error adding the category!", error);
-      });
-  };
-
-  const handleAddManufacturer = () => {
-    axios.post("http://127.0.0.1:8000/api/manufacturers/", { name: newManufacturer }) // Adjust to your API URL
-      .then((response) => {
-        setManufacturers((prevManufacturers) => [...prevManufacturers, response.data]);
-        setNewManufacturer("");
-        setShowManufacturerForm(false); // Close the form after successful addition
-      })
-      .catch((error) => {
-        console.error("There was an error adding the manufacturer!", error);
-      });
+      .catch((error) => console.error("Error adding product!", error));
   };
 
   return (
-    <div>
-      <h1>Products</h1>
-      <button onClick={() => setShowForm(true)}>Add New Product</button>
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-4">Products</h1>
+      <button
+        className="bg-[#7E6C6C] text-white px-4 py-2 rounded-md hover:opacity-80"
+        onClick={() => setShowForm(true)}
+      >
+        Add New Product
+      </button>
+
 
       {showForm && (
-        <form onSubmit={handleSubmit}>
-          <h2>Add New Product</h2>
-          <label>Name:</label>
-          <input
-            type="text"
-            name="name"
-            value={newProduct.name}
-            onChange={handleChange}
-            required
-          />
-          <br />
-          <label>Description:</label>
-          <textarea
-            name="description"
-            value={newProduct.description}
-            onChange={handleChange}
-            required
-          />
-          <br />
-          <label>Quantity:</label>
-          <input
-            type="number"
-            name="quantity"
-            value={newProduct.quantity}
-            onChange={handleChange}
-            required
-          />
-          <br />
-          <label>Price:</label>
-          <input
-            type="number"
-            name="price"
-            value={newProduct.price}
-            onChange={handleChange}
-            required
-          />
-          <br />
-          <label>Category:</label>
-          <select
-            name="category"
-            value={newProduct.category}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Category</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-          <button type="button" onClick={() => setShowCategoryForm(true)}>
-            Add New Category
-          </button>
-          {showCategoryForm && (
-            <div>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <h2 className="text-xl font-bold mb-4 inline">Add New Product</h2>
+            <button className="text-xl font-bold mb-4 ml-36" onClick={() => setShowForm(false)}>X</button>
+            <form onSubmit={handleSubmit} className="space-y-3">
               <input
                 type="text"
-                value={newCategory}
-                onChange={handleCategoryChange}
-                placeholder="New Category Name"
+                name="name"
+                placeholder="Product Name"
+                value={newProduct.name}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
               />
-              <button type="button" onClick={handleAddCategory}>Add Category</button>
-            </div>
-          )}
-          <br />
-          <label>Manufacturer:</label>
-          <select
-            name="manufacturer"
-            value={newProduct.manufacturer}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Manufacturer</option>
-            {manufacturers.map((manufacturer) => (
-              <option key={manufacturer.id} value={manufacturer.id}>
-                {manufacturer.name}
-              </option>
-            ))}
-          </select>
-          <button type="button" onClick={() => setShowManufacturerForm(true)}>
-            Add New Manufacturer
-          </button>
-          {showManufacturerForm && (
-            <div>
-              <input
-                type="text"
-                value={newManufacturer}
-                onChange={handleManufacturerChange}
-                placeholder="New Manufacturer Name"
+              <textarea
+                name="description"
+                placeholder="Description"
+                value={newProduct.description}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
               />
-              <button type="button" onClick={handleAddManufacturer}>Add Manufacturer</button>
-            </div>
-          )}
-          <br />
-          <button type="submit">Submit</button>
-        </form>
+              <div className="w-full">
+                <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">
+                  Quantity
+                </label>
+                <input
+                  type="number"
+                  id="quantity"
+                  name="quantity"
+                  placeholder="Enter quantity"
+                  value={newProduct.quantity}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+
+              <div className="w-full mt-2">
+                <label htmlFor="price" className="block text-sm font-medium text-gray-700">
+                  Price
+                </label>
+                <input
+                  type="number"
+                  id="price"
+                  name="price"
+                  placeholder="Enter price"
+                  value={newProduct.price}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+
+              <select
+                name="category"
+                value={newProduct.category}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              >
+                <option value="">Select Category</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+              <select
+                name="manufacturer"
+
+                value={newProduct.manufacturer}
+                onChange={handleChange}
+                required
+                className="w-full p-2 border rounded"
+              >
+                <option value="">Select Manufacturer</option>
+                {manufacturers.map((man) => (
+                  <option key={man.id} value={man.id}>{man.name}</option>
+                ))}
+              </select>
+              <div className="flex justify-between">
+                <button type="submit" className="bg-[#7E6C6C] text-white px-4 py-2 rounded">Submit</button>
+                <button type="button" className="bg-gray-400 text-white px-4 py-2 rounded" onClick={() => setShowForm(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
-      <table>
+      <table className="w-full mt-6 border-collapse text-center">
         <thead>
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Quantity</th>
-            <th>Price</th>
-            <th>Category</th>
-            <th>Manufacturer</th>
-            <th>Created At</th>
-            <th>Updated At</th>
+          <tr className="bg-[#7E6C6C] text-white">
+            <th className="p-2">Name</th>
+            <th className="p-2">Description</th>
+            <th className="p-2">Quantity</th>
+            <th className="p-2">Price</th>
+            <th className="p-2">Category</th>
+            <th className="p-2">Manufacturer</th>
+            <th className="p-2">Action</th>
           </tr>
         </thead>
         <tbody>
           {products.map((product) => (
-            <tr key={product.id}>
-              <td>{product.name}</td>
-              <td>{product.description}</td>
-              <td>{product.quantity}</td>
-              <td>{product.price}</td>
-              <td>{product.category}</td>
-              <td>{product.manufacturer}</td>
-              <td>{product.created_at}</td>
-              <td>{product.updated_at}</td>
+            <tr key={product.id} className="border-b text-center">
+              <td className="p-2">{product.name}</td>
+              <td className="p-2">{product.description}</td>
+              <td className="p-2">{product.quantity}</td>
+              <td className="p-2">{product.price}</td>
+              <td className="p-2">
+                {categories.find((c) => c.id === product.category)?.name || "-"}
+              </td>
+              <td className="p-2">
+                {manufacturers.find((m) => m.id === product.manufacturer)?.name || "-"}
+              </td>
+              <td className="p-2 flex justify-center space-x-2">
+                <FiEye
+                  className="text-blue-500 cursor-pointer"
+                  onClick={() => handleView(product)}
+                />
+                <FiEdit
+                  className="text-yellow-500 cursor-pointer"
+                  onClick={() => handleEdit(product)}
+                />
+                <FiTrash
+                  className="text-red-500 cursor-pointer"
+                  onClick={() => handleDelete(product.id)}
+                />
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {showModal && selectedProduct && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <h2 className="text-xl font-bold mb-4">{isEdit ? "Edit Product" : "Product Details"}</h2>
+            <form className="space-y-3">
+              <input
+                type="text"
+                name="name"
+                value={selectedProduct.name}
+                readOnly={!isEdit}
+                className="w-full p-2 border rounded"
+              />
+              <textarea
+                name="description"
+                value={selectedProduct.description}
+                readOnly={!isEdit}
+                className="w-full p-2 border rounded"
+              />
+              <input
+                type="number"
+                name="quantity"
+                value={selectedProduct.quantity}
+                readOnly={!isEdit}
+                className="w-full p-2 border rounded"
+              />
+              <input
+                type="number"
+                name="price"
+                value={selectedProduct.price}
+                readOnly={!isEdit}
+                className="w-full p-2 border rounded"
+              />
+              <button
+                type="button"
+                className="bg-gray-400 text-white px-4 py-2 rounded w-full"
+                onClick={() => setShowModal(false)}
+              >
+                Close
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

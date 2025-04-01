@@ -1,79 +1,82 @@
-// src/redux/slices/orderSlice.js
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+
+ // Add this package for decoding tokens
 
 // Create an axios instance
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/',
+  baseURL: "http://127.0.0.1:8000/",
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
+
+// Function to check if the access token is expired
+const isTokenExpired = (token) => {
+  if (!token) return true;
+  const decoded = jwtDecode(token);
+  return decoded.exp * 1000 < Date.now();
+};
 
 // Function to refresh the token
 const refreshToken = async () => {
   try {
-    const response = await axios.post('http://127.0.0.1:8000//api/token/refresh/', {
-      refresh_token: localStorage.getItem('refresh_token'),
+    const refreshToken = localStorage.getItem("refresh_token");
+    if (!refreshToken) return null;
+
+    const response = await axios.post("http://127.0.0.1:8000/api/token/refresh/", {
+      refresh: refreshToken, // Corrected the refresh token key
     });
-    const newAccessToken = response.data.access_token;
-    localStorage.setItem('access_token', newAccessToken);
+
+    const newAccessToken = response.data.access;
+    localStorage.setItem("access_token", newAccessToken);
     return newAccessToken;
   } catch (error) {
-    console.error('Failed to refresh token:', error);
+    console.error("Failed to refresh token:", error);
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
     return null;
   }
 };
 
-// Add a response interceptor to handle unauthorized errors
-api.interceptors.response.use(
-  response => response, // If the request is successful, just return the response
-  async error => {
-    const originalRequest = error.config;
+// Axios request interceptor to check and refresh token before every request
+api.interceptors.request.use(async (config) => {
+  let token = localStorage.getItem("access_token");
 
-    // If the error is 401 (unauthorized), attempt to refresh the token
-    if (error.response && error.response.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      const newAccessToken = await refreshToken();
-
-      if (newAccessToken) {
-        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-        // Retry the original request with the new token
-        return api(originalRequest);
-      }
+  if (isTokenExpired(token)) {
+    token = await refreshToken();
+    if (!token) {
+      console.warn("Session expired. Redirecting to login...");
+      return Promise.reject(new Error("Session expired"));
     }
-
-    // If token refresh fails or the error is not 401, reject the promise
-    return Promise.reject(error);
   }
-);
+
+  config.headers["Authorization"] = `Bearer ${token}`;
+  return config;
+});
 
 // Define the async thunk for fetching orders
 export const fetchOrders = createAsyncThunk(
-  'orders/fetchOrders',
+  "orders/fetchOrders",
   async ({ customerId, status }, { rejectWithValue }) => {
     try {
       const params = {};
       if (customerId) params.customer_id = customerId;
       if (status) params.status = status;
 
-      const response = await api.get('order/get/', {
-        params: params,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      });
+      const response = await api.get("order/get/", { params });
 
-      return response.data.results; // assuming 'results' contains the orders
+      return response.data.results;
     } catch (error) {
-      return rejectWithValue(error.response.data || error.message);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
 // Create the slice
 const orderSlice = createSlice({
-  name: 'orders',
+  name: "orders",
   initialState: {
     orders: [],
     loading: false,
