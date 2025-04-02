@@ -142,7 +142,7 @@ const NewRequestPage = () => {
             value={customerId}
             onChange={handleCustomerChange}
             className="w-full px-3 py-2 border rounded"
-            required
+         
           >
             <option value="">Select Customer</option>
             {customers.map((customer) => (

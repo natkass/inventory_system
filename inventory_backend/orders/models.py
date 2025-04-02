@@ -7,7 +7,7 @@ class Order(models.Model):
     products = models.ManyToManyField(Product, through='OrderItem')
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     order_date = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=50, choices=[('pending', 'Pending'), ('completed', 'Completed')])
+    status = models.CharField(max_length=50, choices=[('pending', 'Pending'), ('completed', 'Completed'),('reversed', 'Reversed')])
 
     def __str__(self):
         return self.customer.name if self.customer else "No customer"

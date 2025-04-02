@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FiEye, FiEdit, FiTrash } from "react-icons/fi";
+import { FiEye, FiEdit, FiTrash, FiPlusCircle, FiX } from "react-icons/fi";
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -10,6 +10,9 @@ const ProductsPage = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isEdit, setIsEdit] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 2;
   const [newProduct, setNewProduct] = useState({
     name: "",
     description: "",
@@ -28,10 +31,11 @@ console.log("ppppp",products.category)
       .then((response) => setCategories(response.data))
       .catch((error) => console.error("Error fetching categories!", error));
 
-    axios.get("http://127.0.0.1:8000//api/manufacturers/")
+    axios.get("http://127.0.0.1:8000/manufacturer/Manufacturer/")
       .then((response) => setManufacturers(response.data))
       .catch((error) => console.error("Error fetching manufacturers!", error));
   }, []);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -68,15 +72,51 @@ console.log("ppppp",products.category)
       .catch((error) => console.error("Error adding product!", error));
   };
 
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+  };
+
+  const filteredProducts = products.filter(product => 
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+  const handleStockTopUp = (id) => {
+    const newQuantity = prompt("Enter additional stock quantity:", "0");
+    if (newQuantity && !isNaN(newQuantity) && Number(newQuantity) > 0) {
+      setProducts(products.map(product => 
+        product.id === id ? { ...product, quantity: product.quantity + Number(newQuantity) } : product
+      ));
+    }
+  };
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-4">Products</h1>
+      <div className="flex items-center mb-4">
+        <input 
+          type="text" 
+          placeholder="Search Products..." 
+          value={searchTerm} 
+          onChange={handleSearchChange} 
+          className="p-2 border rounded w-full"
+        />
+        {searchTerm && (
+          <FiX className="cursor-pointer ml-2" onClick={clearSearch} />
+        )}
+      </div>
       <button
         className="bg-[#7E6C6C] text-white px-4 py-2 rounded-md hover:opacity-80"
         onClick={() => setShowForm(true)}
       >
         Add New Product
       </button>
+
 
 
       {showForm && (
@@ -170,7 +210,8 @@ console.log("ppppp",products.category)
 
       <table className="w-full mt-6 border-collapse text-center">
         <thead>
-          <tr className="bg-[#7E6C6C] text-white">
+        <tr className="bg-[#7E6C6C] text-white">
+            <th className="p-2">#</th>
             <th className="p-2">Name</th>
             <th className="p-2">Description</th>
             <th className="p-2">Quantity</th>
@@ -181,36 +222,55 @@ console.log("ppppp",products.category)
           </tr>
         </thead>
         <tbody>
-          {products.map((product) => (
-            <tr key={product.id} className="border-b text-center">
+        {filteredProducts
+  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+  .map((product, index) => (
+            <tr key={product.id} className={`border-b text-center ${product.quantity < 5 ? 'bg-yellow-200' : ''}`}
+                title={product.quantity < 5 ? 'Low in stock' : ''}>
+              <td className="p-2">{index + 1}</td>
               <td className="p-2">{product.name}</td>
               <td className="p-2">{product.description}</td>
-              <td className="p-2">{product.quantity}</td>
+              <td className="p-2 relative">
+                <span className={product.quantity < 5 ? "text-red-500 font-bold" : ""}>{product.quantity}</span>
+                {product.quantity < 5 && (
+                  <span className="absolute bg-gray-800 text-white text-xs p-1 rounded shadow-lg left-1/2 transform -translate-x-1/2 opacity-0 hover:opacity-100 transition-opacity">
+                    Low in stock
+                  </span>
+                )}
+              </td>
               <td className="p-2">{product.price}</td>
               <td className="p-2">
-                {categories.find((c) => c.id === product.category)?.name || "-"}
-              </td>
-              <td className="p-2">
-                {manufacturers.find((m) => m.id === product.manufacturer)?.name || "-"}
-              </td>
+  {categories.find((c) => c.id === product.category)?.name || "-"}
+</td>
+<td className="p-2">
+  {manufacturers.find((m) => m.id === product.manufacturer)?.name || "-"}
+</td>
               <td className="p-2 flex justify-center space-x-2">
-                <FiEye
-                  className="text-blue-500 cursor-pointer"
-                  onClick={() => handleView(product)}
-                />
-                <FiEdit
-                  className="text-yellow-500 cursor-pointer"
-                  onClick={() => handleEdit(product)}
-                />
-                <FiTrash
-                  className="text-red-500 cursor-pointer"
-                  onClick={() => handleDelete(product.id)}
-                />
+                <FiEye className="text-blue-500 cursor-pointer" onClick={() => handleView(product)} />
+                <FiEdit className="text-yellow-500 cursor-pointer" onClick={() => handleEdit(product)} />
+                <FiTrash className="text-red-500 cursor-pointer" onClick={() => handleDelete(product.id)} />
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      <div className="flex justify-between items-center mt-4">
+        <button
+          disabled={currentPage === 1}
+          className="px-4 py-2 bg-gray-400 text-white rounded disabled:opacity-50"
+          onClick={() => setCurrentPage(currentPage - 1)}
+        >
+          Previous
+        </button>
+        <span>Page {currentPage} of {Math.ceil(filteredProducts.length / itemsPerPage)}</span>
+        <button
+          disabled={indexOfLastItem >= filteredProducts.length}
+          className="px-4 py-2 bg-gray-400 text-white rounded disabled:opacity-50"
+          onClick={() => setCurrentPage(currentPage + 1)}
+        >
+          Next
+        </button>
+      </div>
       {showModal && selectedProduct && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg w-96">

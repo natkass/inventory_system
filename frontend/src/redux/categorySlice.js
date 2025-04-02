@@ -3,7 +3,7 @@ import axios from "axios";
 
 // Create an axios instance
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000/",
+  baseURL: "http://127.0.0.1:8000/category/api/Category/", // Adjust base URL to match your API
   headers: {
     "Content-Type": "application/json",
   },
@@ -14,7 +14,7 @@ export const fetchCategories = createAsyncThunk(
   "categories/fetchCategories",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("http://127.0.0.1:8000/category/api/Category/");
+      const response = await api.get(""); // API endpoint for fetching all categories
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -27,7 +27,7 @@ export const createCategory = createAsyncThunk(
   "category/createCategory",
   async (categoryData, { rejectWithValue }) => {
     try {
-      const response = await api.post("categories/", categoryData);
+      const response = await api.post("", categoryData); // API endpoint for creating a category
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -40,7 +40,7 @@ export const updateCategory = createAsyncThunk(
   "categories/updateCategory",
   async ({ id, updatedData }, { rejectWithValue }) => {
     try {
-      const response = await api.put(`categories/${id}/`, updatedData);
+      const response = await api.put(`${id}/`, updatedData); // API endpoint for updating a category
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -53,7 +53,7 @@ export const deleteCategory = createAsyncThunk(
   "categories/deleteCategory",
   async (id, { rejectWithValue }) => {
     try {
-      await api.delete(`categories/${id}/`);
+      await api.delete(`${id}/`); // API endpoint for deleting a category
       return id; // Return the deleted category ID
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);

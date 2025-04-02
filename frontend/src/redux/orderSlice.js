@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
- // Add this package for decoding tokens
+// Add this package for decoding tokens
 
 // Create an axios instance
 const api = axios.create({
@@ -74,7 +74,44 @@ export const fetchOrders = createAsyncThunk(
   }
 );
 
-// Create the slice
+// Create an async thunk to complete the order
+export const completeOrder = createAsyncThunk(
+  "orders/completeOrder",
+  async (orderId, { rejectWithValue }) => {
+    try {
+      const response = await api.patch(`order/complete/${orderId}/`);
+      return response.data; // Assuming the response has the updated order data
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// Create an async thunk to delete an order (assuming you meant to create a delete function)
+export const deleteOrder = createAsyncThunk(
+  "orders/deleteOrder",
+  async (orderId, { rejectWithValue }) => {
+    try {
+      const response = await api.delete(`order/${orderId}/`);
+      return orderId; // Returning the order ID so we can remove it from the state
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+export const reverseOrder = createAsyncThunk(
+  "orders/reverseOrder",
+  async (orderId, { rejectWithValue }) => {
+    try {
+      const response = await api.patch(`order/reverse/${orderId}/`);
+      return response.data; // Assuming the response contains the updated order
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// Update the extraReducers to handle the new actions
 const orderSlice = createSlice({
   name: "orders",
   initialState: {
@@ -94,6 +131,46 @@ const orderSlice = createSlice({
         state.orders = action.payload;
       })
       .addCase(fetchOrders.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(completeOrder.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(completeOrder.fulfilled, (state, action) => {
+        state.loading = false;
+        // Optionally, update the order in the state
+        const updatedOrder = action.payload;
+        const index = state.orders.findIndex(order => order.id === updatedOrder.id);
+        if (index !== -1) {
+          state.orders[index] = updatedOrder;
+        }
+      })
+      .addCase(completeOrder.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteOrder.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteOrder.fulfilled, (state, action) => {
+        state.loading = false;
+        // Remove the order from the state
+        state.orders = state.orders.filter(order => order.id !== action.payload);
+      })
+      .addCase(deleteOrder.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(reverseOrder.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(reverseOrder.fulfilled, (state, action) => {
+        state.loading = false;
+        // Remove the order from the state
+        state.orders = state.orders.filter(order => order.id !== action.payload);
+      })
+      .addCase(reverseOrder.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
