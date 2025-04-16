@@ -123,7 +123,7 @@ const OrdersPage = () => {
           </thead>
           <tbody>
             {currentOrders.length > 0 ? (
-              currentOrders.map(({ id, customer_name, total_amount, status, created_at }) => (
+              currentOrders.map(({ id, customer_name, total_amount, status, order_date }) => (
                 <tr key={id} className="border-b border-gray-200 hover:bg-gray-100">
                   <td className="p-4">{id}</td>
                   <td className="p-4">{customer_name}</td>
@@ -131,7 +131,7 @@ const OrdersPage = () => {
                   <td className="p-4">
                     <Chip variant="ghost" size="sm" value={status} color={status === 'pending' ? 'blue-gray' : status === 'reversed' ? 'amber' : 'green'} />
                   </td>
-                  <td className="p-4">{created_at}</td>
+                  <td className="p-4">{order_date}</td>
                   <td className="p-4 flex space-x-2">
                     {(status === 'pending' || status === 'reversed') && (
                       <Button onClick={() => handleOrderAction(completeOrder, id)} className={`px-4 py-1 text-white ${status === 'reversed' ? 'bg-orange-400' : 'bg-green-600'}`} size="sm">Complete</Button>

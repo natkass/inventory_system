@@ -6,14 +6,17 @@ const NewRequestPage = () => {
   const [customerName, setCustomerName] = useState('');
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([
-    { product_id: '', quantity: '', price: 0, subtotal: 0 , total_amount:0}
+    { product_id: '', quantity: '', price: 0, subtotal: 0, total_amount: 0 }
   ]);
+  const [formData, setFormData] = useState({
+    name: '', tin: '', email: '', phone: '', address: '',
+  });
   const [availableProducts, setAvailableProducts] = useState([]);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [totalPrice, setTotalPrice] = useState(0);
-  const [vat, setVat]= useState(0);
-
+  const [vat, setVat] = useState(0);
+  const [showModal, setShowModal] = useState(false);
   // Fetch products from API
   useEffect(() => {
     axios.get('http://127.0.0.1:8000/products/api/products/') // Change URL as needed
@@ -89,11 +92,11 @@ const NewRequestPage = () => {
     const total = updatedProducts.reduce((acc, product) => acc + product.subtotal, 0);
     const vat = total * 0.15; // Calculate VAT
     const totalPrice = total + vat; // Calculate total price
-  
+
     setVat(vat); // Update VAT state
     setTotalPrice(totalPrice); // Update total price state
   };
-  
+
 
   // Submit form
   const handleSubmit = async (e) => {
@@ -126,6 +129,34 @@ const NewRequestPage = () => {
       }
     }
   };
+  const getAvailableQuantity = (productId) => {
+    const selectedProduct = availableProducts.find((p) => p.id === Number(productId));
+    return selectedProduct ? selectedProduct.quantity : 0;
+  };
+
+  // Handle adding a new customer
+  const handleAddCustomer = () => {
+    setShowModal(true);
+    console.log('Add new customer clicked');
+  };
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setFormData({ name: '', tin: '', email: '', phone: '', address: '' });
+  };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+  const handleSaveCustomer = async () => {
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/customers/api/customers/', formData); // Update your endpoint if needed
+      console.log('Customer created:', response.data);
+      handleCloseModal();
+      // Optionally refresh customer list here
+    } catch (error) {
+      console.error('Error creating customer:', error.response?.data || error.message);
+    }
+  };
 
   return (
     <div className="p-6 max-w-2xl mx-auto bg-white shadow-md rounded-lg">
@@ -142,7 +173,7 @@ const NewRequestPage = () => {
             value={customerId}
             onChange={handleCustomerChange}
             className="w-full px-3 py-2 border rounded"
-         
+
           >
             <option value="">Select Customer</option>
             {customers.map((customer) => (
@@ -150,55 +181,64 @@ const NewRequestPage = () => {
                 {customer.name}
               </option>
             ))}
+            <option onClick={handleAddCustomer}>
+              + Add New Customer
+            </option>
           </select>
         </div>
 
         {/* Dynamic Product Fields */}
-        {products.map((product, index) => (
-          <div key={index} className="flex space-x-2 items-center">
-            {/* Product Dropdown */}
-            <select
-              value={product.product_id}
-              onChange={(e) => handleProductChange(index, e.target.value)}
-              required
-              className="w-1/3 px-3 py-2 border rounded"
-            >
-              <option value="">Select Product</option>
-              {availableProducts.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} - ${p.price}
-                </option>
-              ))}
-            </select>
-
-            {/* Quantity Input */}
-            <input
-              type="number"
-              placeholder="Quantity"
-              value={product.quantity}
-              onChange={(e) => handleQuantityChange(index, e.target.value)}
-              required
-              className="w-1/4 px-3 py-2 border rounded"
-            />
-
-            {/* Price Display */}
-            <td>${Number(product.price).toFixed(2)}</td>
-
-            {/* Subtotal Display */}
-            <td>${Number(product.subtotal).toFixed(2)}</td>
-
-            {/* Remove Button */}
-            {products.length > 1 && (
-              <button
-                type="button"
-                onClick={() => removeProduct(index)}
-                className="text-red-500"
+        {products
+          .map((product, index) => (
+            <div key={index} className="flex space-x-2 items-center">
+              {/* Product Dropdown */}
+              <select
+                value={product.product_id}
+                onChange={(e) => handleProductChange(index, e.target.value)}
+                required
+                className="w-1/3 px-3 py-2 border rounded"
               >
-                ✕
-              </button>
-            )}
-          </div>
-        ))}
+                <option value="">Select Product</option>
+                {availableProducts
+                  .filter((p) => p.quantity > 0) // Filter only products with quantity > 0
+                  .map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} - ${p.price} ({p.quantity} available)
+                    </option>
+                  ))}
+              </select>
+
+
+              {/* Quantity Input */}
+              <input
+                type="number"
+                placeholder="Quantity"
+                value={product.quantity}
+                onChange={(e) => handleQuantityChange(index, e.target.value)}
+                required
+                className={`w-1/4 px-3 py-2 border rounded ${product.quantity > getAvailableQuantity(product.product_id) ? 'border-red-500 text-red-600' : ''
+                  }`}
+              />
+
+
+              {/* Price Display */}
+              <td>${Number(product.price).toFixed(2)}</td>
+
+              {/* Subtotal Display */}
+              <td>${Number(product.subtotal).toFixed(2)}</td>
+
+              {/* Remove Button */}
+              {products.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeProduct(index)}
+                  className="text-red-500"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
 
         {/* Add Product Button */}
         <button type="button" onClick={addProduct} className="text-blue-500">
@@ -248,7 +288,70 @@ const NewRequestPage = () => {
           Submit Order
         </button>
       </form>
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white p-6 rounded shadow-md w-[400px]">
+            <h2 className="text-lg font-bold mb-4">Add New Customer</h2>
+
+            <input
+              type="text"
+              name="name"
+              placeholder="Customer Name"
+              value={formData.name}
+              onChange={handleChange}
+              className="border p-2 w-full mb-3"
+            />
+            <input
+              type="number"
+              name="tin"
+              placeholder="TIN"
+              value={formData.tin}
+              onChange={handleChange}
+              className="border p-2 w-full mb-3"
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleChange}
+              className="border p-2 w-full mb-3"
+            />
+            <input
+              type="text"
+              name="phone"
+              placeholder="Phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className="border p-2 w-full mb-3"
+            />
+            <textarea
+              name="address"
+              placeholder="Address"
+              value={formData.address}
+              onChange={handleChange}
+              className="border p-2 w-full mb-4"
+            ></textarea>
+
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={handleCloseModal}
+                className="px-4 py-2 bg-gray-300 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveCustomer}
+                className="px-4 py-2 bg-blue-600 text-white rounded"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+
   );
 };
 

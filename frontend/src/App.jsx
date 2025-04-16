@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import OrdersPage from "./pages/OrdersPage";
 import ProductsPage from "./pages/products";
 import CategoryList from "./pages/Category";
+import Customer from "./pages/Customer";
 import { Sidebar, Menu, MenuItem, Submenu, Logo } from "react-mui-sidebar"
 const App = () => {
   return (
@@ -27,6 +28,7 @@ const App = () => {
                 <Route path="/new-request" element={<NewRequestPage />} />
                 <Route path="/products" element={<ProductsPage />} />
                 <Route path="/category" element={<CategoryList />} />
+                <Route path="/customer" element={<Customer />} />
               </Routes>
             </Layout>
           }

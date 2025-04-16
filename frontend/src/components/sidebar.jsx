@@ -91,6 +91,7 @@ const Sidebar = () => {
                 { name: "Orders", path: "/orders" },
                 { name: "Products", path: "/products" },
                 { name: "Category", path: "/category" },
+                { name: "Customer", path: "/customer" },
               ].map((item, index) => (
                 <Link to={item.path} key={index} className="block">
                   <ListItem className="flex items-center gap-x-2 cursor-pointer">
