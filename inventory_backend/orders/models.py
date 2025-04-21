@@ -6,7 +6,7 @@ class Order(models.Model):
     customer = models.ForeignKey(Customer,null=True,blank=True ,related_name='orders', on_delete=models.CASCADE)
     products = models.ManyToManyField(Product, through='OrderItem')
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    order_date = models.DateTimeField(auto_now_add=True)
+    order_date = models.DateTimeField(auto_now_add=True)    
     status = models.CharField(max_length=50, choices=[('pending', 'Pending'), ('completed', 'Completed'),('reversed', 'Reversed')])
 
     def __str__(self):

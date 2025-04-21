@@ -26,7 +26,7 @@ const ProductsPage = () => {
     axios.get("http://127.0.0.1:8000/products/api/products/")
       .then((response) => setProducts(response.data))
       .catch((error) => console.error("Error fetching products!", error));
-console.log("ppppp",products.category)
+    console.log("ppppp", products.category)
     axios.get("http://127.0.0.1:8000/category/api/Category/")
       .then((response) => setCategories(response.data))
       .catch((error) => console.error("Error fetching categories!", error));
@@ -81,7 +81,7 @@ console.log("ppppp",products.category)
     setSearchTerm("");
   };
 
-  const filteredProducts = products.filter(product => 
+  const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -89,21 +89,36 @@ console.log("ppppp",products.category)
   const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
   const handleStockTopUp = (id) => {
     const newQuantity = prompt("Enter additional stock quantity:", "0");
-    if (newQuantity && !isNaN(newQuantity) && Number(newQuantity) > 0) {
-      setProducts(products.map(product => 
-        product.id === id ? { ...product, quantity: product.quantity + Number(newQuantity) } : product
-      ));
+    const additionalQty = Number(newQuantity);
+  
+    if (newQuantity && !isNaN(additionalQty) && additionalQty > 0) {
+      const productToUpdate = products.find((product) => product.id === id);
+      const updatedQuantity = productToUpdate.quantity + additionalQty;
+  
+      axios.patch(`http://127.0.0.1:8000/products/api/products/${id}/`, {
+        quantity: updatedQuantity,
+      })
+        .then((response) => {
+          setProducts(products.map((product) =>
+            product.id === id ? { ...product, quantity: updatedQuantity } : product
+          ));
+        })
+        .catch((error) => {
+          console.error("Error updating stock quantity!", error);
+          alert("Failed to update stock. Try again.");
+        });
     }
   };
+  
   return (
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-4">Products</h1>
       <div className="flex items-center mb-4">
-        <input 
-          type="text" 
-          placeholder="Search Products..." 
-          value={searchTerm} 
-          onChange={handleSearchChange} 
+        <input
+          type="text"
+          placeholder="Search Products..."
+          value={searchTerm}
+          onChange={handleSearchChange}
           className="p-2 border rounded w-full"
         />
         {searchTerm && (
@@ -210,7 +225,7 @@ console.log("ppppp",products.category)
 
       <table className="w-full mt-6 border-collapse text-center">
         <thead>
-        <tr className="bg-[#7E6C6C] text-white">
+          <tr className="bg-[#7E6C6C] text-white">
             <th className="p-2">#</th>
             <th className="p-2">Name</th>
             <th className="p-2">Description</th>
@@ -222,36 +237,41 @@ console.log("ppppp",products.category)
           </tr>
         </thead>
         <tbody>
-        {filteredProducts
-  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-  .map((product, index) => (
-            <tr key={product.id} className={`border-b text-center ${product.quantity < 5 ? 'bg-yellow-200' : ''}`}
+          {filteredProducts
+            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+            .map((product, index) => (
+              <tr key={product.id} className={`border-b text-center ${product.quantity < 5 ? 'bg-yellow-200' : ''}`}
                 title={product.quantity < 5 ? 'Low in stock' : ''}>
-              <td className="p-2">{index + 1}</td>
-              <td className="p-2">{product.name}</td>
-              <td className="p-2">{product.description}</td>
-              <td className="p-2 relative">
-                <span className={product.quantity < 5 ? "text-red-500 font-bold" : ""}>{product.quantity}</span>
-                {product.quantity < 5 && (
-                  <span className="absolute bg-gray-800 text-white text-xs p-1 rounded shadow-lg left-1/2 transform -translate-x-1/2 opacity-0 hover:opacity-100 transition-opacity">
-                    Low in stock
-                  </span>
-                )}
-              </td>
-              <td className="p-2">{product.price}</td>
-              <td className="p-2">
-  {categories.find((c) => c.id === product.category)?.name || "-"}
-</td>
-<td className="p-2">
-  {manufacturers.find((m) => m.id === product.manufacturer)?.name || "-"}
-</td>
-              <td className="p-2 flex justify-center space-x-2">
+                <td className="p-2">{index + 1}</td>
+                <td className="p-2">{product.name}</td>
+                <td className="p-2">{product.description}</td>
+                <td className="p-2 relative">
+                  <span className={product.quantity < 5 ? "text-red-500 font-bold" : ""}>{product.quantity}</span>
+                  {product.quantity < 5 && (
+                    <span className="absolute bg-gray-800 text-white text-xs p-1 rounded shadow-lg left-1/2 transform -translate-x-1/2 opacity-0 hover:opacity-100 transition-opacity">
+                      Low in stock
+                    </span>
+                  )}
+                </td>
+                <td className="p-2">{product.price}</td>
+                <td className="p-2">
+                  {categories.find((c) => c.id === product.category)?.name || "-"}
+                </td>
+                <td className="p-2">
+                  {manufacturers.find((m) => m.id === product.manufacturer)?.name || "-"}
+                </td>
+                <td className="p-2 flex justify-center space-x-2">
+                <FiPlusCircle
+  className="text-green-600 cursor-pointer"
+  title="Top up stock"
+  onClick={() => handleStockTopUp(product.id)}
+/>
                 <FiEye className="text-blue-500 cursor-pointer" onClick={() => handleView(product)} />
-                <FiEdit className="text-yellow-500 cursor-pointer" onClick={() => handleEdit(product)} />
-                <FiTrash className="text-red-500 cursor-pointer" onClick={() => handleDelete(product.id)} />
-              </td>
-            </tr>
-          ))}
+                  <FiEdit className="text-yellow-500 cursor-pointer" onClick={() => handleEdit(product)} />
+                  <FiTrash className="text-red-500 cursor-pointer" onClick={() => handleDelete(product.id)} />
+                </td>
+              </tr>
+            ))}
         </tbody>
       </table>
       <div className="flex justify-between items-center mt-4">
