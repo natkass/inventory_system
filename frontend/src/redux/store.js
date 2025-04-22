@@ -3,13 +3,16 @@ import requestReducer from "./requestSlice"; // Correct path to your slice
 import orderReducer from "./orderSlice";
 import categoryReducer from "./categorySlice";
 import customerReducer from "./customerSlice"; // Correct path to your slice
+import dashboardReducer from "./dashboardSlice"; 
 
 const store = configureStore({
   reducer: {
     requests: requestReducer, // Make sure it's the correct name and reducer
     orders: orderReducer,
     categories: categoryReducer,
-    customers: customerReducer
+    customers: customerReducer,
+    dashboard: dashboardReducer,
+
   },
 });
 

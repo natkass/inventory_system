@@ -22,6 +22,7 @@ import {
   Cog6ToothIcon,
   PowerIcon,
 } from "@heroicons/react/24/outline";
+import { FaChevronDown } from "react-icons/fa";
 
 const Sidebar = () => {
   const [open, setOpen] = useState(null);
@@ -39,35 +40,25 @@ const Sidebar = () => {
       </div>
       <List className="space-y-1">
         {/* Dashboard Section */}
-        <Accordion open={open === 1}>
-          <ListItem className="p-0" selected={open === 1}>
-            <AccordionHeader onClick={() => handleOpen(1)} className="border-b-0 p-3 flex items-center gap-x-2">
-              <ListItemPrefix>
-                <PresentationChartBarIcon className="invert h-5 w-5" />
-              </ListItemPrefix>
-              <Typography  className=" text-white mr-auto font-normal">
-                Dashboard
-              </Typography>
-              <ChevronDownIcon
-                strokeWidth={2.5}
-                className={`h-4 w-4 transition-transform ${open === 1 ? "rotate-180" : ""}`}
-              />
-            </AccordionHeader>
-          </ListItem>
-          <AccordionBody className={`py-1 ${open === 1 ? "" : "hidden"}`}>
+        ;
 
-            <List className="text-white p-0 space-y-1">
-              {["Analytics", "Reporting", "Projects"].map((item, index) => (
-                <ListItem key={index} className="text-white  flex items-center gap-x-2">
-                  <ListItemPrefix>
-                    <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
-                  </ListItemPrefix>
-                  {item}
-                </ListItem>
-              ))}
-            </List>
-          </AccordionBody>
-        </Accordion>
+<ListItem className="p-0">
+  <Link
+    to="/dashboard"
+    className="text-white  border-b-0 p-3 flex items-center gap-x-2 w-full"
+  >
+    <ListItemPrefix>
+      <PresentationChartBarIcon className=" h-5 w-5" />
+    </ListItemPrefix>
+
+    <Typography color="white" className="mr-auto font-bold text-lg">
+      Dashboard
+    </Typography>
+
+  </Link>
+</ListItem>
+
+
 
         {/* E-Commerce Section */}
         <Accordion open={open === 2}>
@@ -110,7 +101,7 @@ const Sidebar = () => {
 
         {/* Additional Links */}
         {[
-          { icon: <InboxIcon className="text-white  h-5 w-5" />, label : "Inbox", suffix: <Chip value="14" size="sm" variant="ghost" className="text-white  rounded-full" /> },
+          { icon: <InboxIcon className="text-white  h-5 w-5" />, label: "Inbox", suffix: <Chip value="14" size="sm" variant="ghost" className="text-white  rounded-full" /> },
           { icon: <UserCircleIcon className="h-5 w-5" />, label: "Profile" },
           { icon: <Cog6ToothIcon className="h-5 w-5" />, label: "Settings" },
           { icon: <PowerIcon className="h-5 w-5" />, label: "Log Out" },

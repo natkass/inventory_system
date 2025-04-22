@@ -43,7 +43,7 @@ const LoginPage = () => {
       // Set Axios default headers for future requests
       axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
 
-      navigate('/orders'); // Redirect to requests page
+      navigate('/dashboard'); // Redirect to requests page
     } catch (err) {
       setError('Invalid credentials, please try again.');
     }
