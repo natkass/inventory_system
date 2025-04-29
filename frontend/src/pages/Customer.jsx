@@ -163,86 +163,92 @@ const CustomerPage = () => {
             <h2 className="text-xl font-bold mb-4 inline">Add New Customer</h2>
             <button className="text-xl font-bold mb-4 ml-36" onClick={() => setOpen(false)}>X</button>
             <form onSubmit={handleSubmit} className="space-y-5">
-  <div>
-    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Customer Name</label>
-    <input
-      type="text"
-      name="name"
-      placeholder="Enter Customer Name"
-      value={newCustomer.name}
-      onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
-      required
-      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7E6C6C] focus:outline-none transition duration-300"
-    />
-  </div>
-  <div>
-    <label htmlFor="tin" className="block text-sm font-medium text-gray-700">TIN</label>
-    <input
-      type="text"
-      name="tin"
-      placeholder="Enter Customer TIN"
-      value={newCustomer.tin}
-      onChange={(e) => setNewCustomer({ ...newCustomer, tin: e.target.value })}
-      required
-      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7E6C6C] focus:outline-none transition duration-300"
-    />
-  </div>
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Customer Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Enter Customer Name"
+                  value={newCustomer.name}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7E6C6C] focus:outline-none transition duration-300"
+                />
+              </div>
+              <div>
+                <label htmlFor="tin" className="block text-sm font-medium text-gray-700">TIN</label>
+                <input
+                  type="text"
+                  name="tin"
+                  placeholder="Enter Customer TIN"
+                  value={newCustomer.tin}
+                  onChange={(e) => {
+                    let value = e.target.value.replace(/\D/g, ''); // Remove any non-digit characters
+                    if (value.length <= 10) {
+                      setNewCustomer({ ...newCustomer, tin: value }); // Update only if 10 digits or less
+                    }
+                  }}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7E6C6C] focus:outline-none transition duration-300"
+                />
 
-  <div>
-    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-    <input
-      type="email"
-      name="email"
-      placeholder="Enter Email"
-      value={newCustomer.email}
-      onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
-      required
-      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7E6C6C] focus:outline-none transition duration-300"
-    />
-  </div>
+              </div>
 
-  <div>
-    <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
-    <input
-      type="text"
-      name="phone"
-      placeholder="Enter Phone"
-      value={newCustomer.phone}
-      onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
-      required
-      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7E6C6C] focus:outline-none transition duration-300"
-    />
-  </div>
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Enter Email"
+                  value={newCustomer.email}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7E6C6C] focus:outline-none transition duration-300"
+                />
+              </div>
 
-  <div>
-    <label htmlFor="address" className="block text-sm font-medium text-gray-700">Address</label>
-    <input
-      type="text"
-      name="address"
-      placeholder="Enter Address"
-      value={newCustomer.address}
-      onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
-      required
-      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7E6C6C] focus:outline-none transition duration-300"
-    />
-  </div>
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
+                <input
+                  type="text"
+                  name="phone"
+                  placeholder="Enter Phone"
+                  value={newCustomer.phone}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7E6C6C] focus:outline-none transition duration-300"
+                />
+              </div>
 
-  <div className="flex justify-between gap-4 mt-4">
-    <button
-      type="submit"
-      className="bg-[#7E6C6C] text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:bg-[#6b5b5b] focus:outline-none transition duration-200"
-    >
-      Submit
-    </button>
-    <button
-      type="button"
-      className="bg-gray-400 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:bg-gray-500 focus:outline-none transition duration-200"
-      onClick={() => setOpen(false)}
-    >
-      Cancel
-    </button>
-  </div>
-</form>
+              <div>
+                <label htmlFor="address" className="block text-sm font-medium text-gray-700">Address</label>
+                <input
+                  type="text"
+                  name="address"
+                  placeholder="Enter Address"
+                  value={newCustomer.address}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, address: e.target.value })}
+                  required
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7E6C6C] focus:outline-none transition duration-300"
+                />
+              </div>
+
+              <div className="flex justify-between gap-4 mt-4">
+                <button
+                  type="submit"
+                  className="bg-[#7E6C6C] text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:bg-[#6b5b5b] focus:outline-none transition duration-200"
+                >
+                  Submit
+                </button>
+                <button
+                  type="button"
+                  className="bg-gray-400 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:bg-gray-500 focus:outline-none transition duration-200"
+                  onClick={() => setOpen(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
 
           </div>
         </div>
