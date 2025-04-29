@@ -1,189 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
+    {% load humanize %}
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Invoice</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f7fb;
+            background-color: #fff;
         }
 
         .invoice-container {
             max-width: 850px;
-            margin: 50px auto;
-            padding: 40px;
-            background-color: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .invoice-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 20px;
-        }
-
-        .invoice-header img {
-            width: 120px;
-        }
-
-        .invoice-header .company-details {
-            text-align: right;
+            margin: 20px auto;
+            padding: 20px;
+            border: 2px solid #000;
             line-height: 1.6;
         }
 
-        .invoice-header .company-details h1 {
-            margin: 0;
-            font-size: 32px;
-            color: #333;
-        }
-
-        .invoice-header .company-details p {
-            margin: 5px 0;
-            color: #555;
-            font-size: 14px;
-        }
-
-        .invoice-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 40px;
-            font-size: 14px;
-            color: #555;
-        }
-
-        .invoice-info div {
-            width: 48%;
-        }
-
-        .invoice-info .order-details {
-            padding-left: 20px;
-            border-left: 2px solid #ddd;
-        }
-
-        h2 {
-            font-size: 26px;
-            color: #333;
-            margin-bottom: 20px;
+        .center {
             text-align: center;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .section {
+            margin-top: 20px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 6px;
             font-size: 14px;
-        }
-
-        th,
-        td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background-color: #f4f4f4;
-            font-weight: bold;
         }
 
         .totals {
+            width: 100%;
             text-align: right;
             margin-top: 20px;
-            font-size: 16px;
         }
 
-        .totals p {
-            margin: 5px 0;
+        .totals td {
+            padding: 4px;
+            font-weight: bold;
         }
 
         .footer {
-            text-align: center;
-            margin-top: 40px;
-            color: #888;
+            margin-top: 30px;
             font-size: 14px;
-            padding-top: 20px;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .footer p {
-            margin: 0;
         }
     </style>
 </head>
 
 <body>
     <div class="invoice-container">
-        <!-- Header Section -->
-        <div class="invoice-header">
-            <img src="{{ company_logo_url }}" alt="Company Logo">
-            <div class="company-details">
-                <h1>{{ company_name }}</h1>
-                <p>{{ company_address }}</p>
-                <p>Email: {{ company_email }}</p>
-                <p>Phone: {{ company_phone }}</p>
-            </div>
+        <!-- Company Header -->
+        <div class="center bold">
+            <div style="font-size: 18px;">ቤቲ እና ናቲ ኃ.የተ.የግ.ማ.</div>
+            <div style="font-size: 16px;">Betty and Natty P.L.C</div>
+            <div>📞 0940 41 56 97 / 0910 29 92 92 አዲስ አበባ, ኢትዮጵያ</div>
+            <div>Addis Ababa, Ethiopia</div>
+            <div class="bold">Value Added Tax Cash Sales Invoice</div>
         </div>
 
-        <!-- Order and Customer Information -->
-        <div class="invoice-info">
-            <div>
-                <h2>Invoice</h2>
-                <p><strong>Order ID:</strong> {{ order.id }}</p>
-                <p><strong>Customer Name:</strong> {{ order.customer }}</p>
-                <p><strong>Order Date:</strong> {{ order.date }}</p>
-                <p><strong>Manufacturer:</strong> {{ manufacturer }}</p>
-            </div>
-            <div class="order-details">
-                <p><strong>Billing Address:</strong></p>
-                <p>{{ order.billing_address }}</p>
-                <p><strong>Shipping Address:</strong></p>
-                <p>{{ order.shipping_address }}</p>
-            </div>
-        </div>
-
-        <!-- Order Items Table -->
-        <table>
-            <thead>
+        <!-- Billing Info -->
+        <div class="section">
+            <table>
                 <tr>
-                    <th>Item</th>
-                    <th>Quantity</th>
-                    <th>Unit Price</th>
-                    <th>Total</th>
+                    <td>
+                        <strong>From:</strong> Betty and Natty P.L.C<br>
+                        VAT Reg. No: 0043058976<br>
+                        TIN No: 8117550010
+                    </td>
+                    <td>
+                        <strong>To:</strong><br>
+                        Name: {{ order.customer.name }}<br>
+                        TIN No: {{ order.customer.tin }}
+                    </td>
+                    <td>
+                        Invoice No: <strong>{{ order.id }}</strong><br>
+                        Date: <strong>{{ order.order_date }}</strong>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                {% for item, item_total in order_item_totals %}
-                <tr>
-                    <td>{{ item.product }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td>${{ item.price }}</td>
-                    <td>${{ item_total }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <!-- Totals Section -->
-        <div class="totals">
-            <p><strong>Subtotal:</strong> ${{ subtotal }}</p>
-            <p><strong>VAT ({{ vat_rate }}%):</strong> ${{ vat_amount }}</p>
-            <p><strong>Total Amount:</strong> ${{ total_amount }}</p>
+            </table>
         </div>
 
-        <!-- Footer Section -->
+        <!-- Order Items -->
+        <div class="section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Description</th>
+                        <th>Unit</th>
+                        <th>Qty</th>
+                        <th>Unit Price</th>
+                        <th>Total Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item, item_total in order_item_totals %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ item.product }}</td>
+                        <td>{{ item.unit|default:"-" }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.price|floatformat:2|intcomma }}</td>
+                        <td>${{ item_total|floatformat:2|intcomma }}</td>
+                        
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Totals -->
+        <div class="section">
+            <table class="totals">
+                <tr>
+                    <td>Subtotal:</td>
+                    <td>${{ subtotal|floatformat:2|intcomma }}</td>
+                </tr>
+                <tr>
+                    <td>VAT ({{ vat_rate }}%):</td>
+                    <td>${{ vat_amount|floatformat:2|intcomma }}</td>
+                </tr>
+                <tr>
+                    <td>Total (incl. VAT):</td>
+                    <td>${{ total_amount|floatformat:2|intcomma }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Amount in Words -->
+        <div class="section">
+            <p><strong>Amount in words:</strong> {{ total_in_words }} Only</p>
+        </div>
+
+        <!-- Footer -->
         <div class="footer">
-            <p>Thank you for your business!</p>
-            <p>If you have any questions, please contact us at {{ company_email }} or call {{ company_phone }}.</p>
+            <p>Mode of Payment: [ ] Cash [ ] Cheque</p>
+            <p>Cashier's Signature: __________________________</p>
         </div>
     </div>
 </body>

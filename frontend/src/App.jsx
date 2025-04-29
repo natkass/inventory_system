@@ -9,6 +9,7 @@ import OrdersPage from "./pages/OrdersPage";
 import ProductsPage from "./pages/products";
 import CategoryList from "./pages/Category";
 import Customer from "./pages/Customer";
+import Dashboard from "./pages/Dashboard";
 import { Sidebar, Menu, MenuItem, Submenu, Logo } from "react-mui-sidebar"
 const App = () => {
   return (
@@ -29,6 +30,7 @@ const App = () => {
                 <Route path="/products" element={<ProductsPage />} />
                 <Route path="/category" element={<CategoryList />} />
                 <Route path="/customer" element={<Customer />} />
+                <Route path="/dashboard" element={<Dashboard />} />
               </Routes>
             </Layout>
           }

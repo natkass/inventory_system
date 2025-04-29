@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt import views as jwt_views
+from orders.views import dashboard_summary
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
@@ -25,5 +26,6 @@ urlpatterns = [
     path('order/', include('orders.urls')),
     path('customers/', include('customers.urls')),
     path('category/', include('categories.urls')),
-    path('manufacturer/', include('manufacturers.urls'))
+    path('manufacturer/', include('manufacturers.urls')),
+    path("dashboard/summary/", dashboard_summary, name="dashboard-summary"),
 ]

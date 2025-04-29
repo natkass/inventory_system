@@ -17,8 +17,13 @@ from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
 from collections import defaultdict
 from django.db.models import Q
-
-
+from django.db.models import Sum, Count
+from datetime import datetime, timedelta
+from manufacturers.models import Manufacturer
+from products.models import Product
+from categories.models import Category
+from django.contrib.auth import get_user_model
+from num2words import num2words
 VAT_RATE = Decimal('0.15')  # Example VAT rate of 15%
 
 @csrf_exempt
@@ -92,30 +97,41 @@ def create_order(request):
 def generate_invoice(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     order_items = OrderItem.objects.filter(order=order)
-    
-    # Calculate the subtotal (sum of item totals) and VAT
+    tin = order.customer.tin if order.customer else None
+
+    # Calculate subtotal and item totals
     subtotal = Decimal(0)
-    item_totals = []  # List to hold item totals for each item
+    item_totals = []
     for item in order_items:
-        # Calculate unit price and total for each item
         item_total = item.price * item.quantity
-        item_totals.append(item_total)  # Store individual item totals
-        subtotal += item_total  # Sum of all item totals
+        item_totals.append(item_total)
+        subtotal += item_total
 
-    vat_amount = subtotal * VAT_RATE  # Calculate VAT based on subtotal
-    total_amount = subtotal + vat_amount  # Total amount including VAT
+    # Calculate VAT and total
+    VAT_RATE = Decimal('0.15')  # Make sure it's defined
+    vat_amount = subtotal * VAT_RATE
+    total_amount = subtotal + vat_amount
 
-    # Zip order_items and item_totals together
+    # Convert total to words AFTER total is calculated
+    total_in_words = num2words(total_amount, to='currency', lang='en', currency='USD')
+    
+    # Replace commas and change dollars to birr
+    total_in_words = total_in_words.replace(',', '').replace('dollars', 'birr')
+
+    # Separate the birr and cents with "and"
+    if 'and' in total_in_words:
+        total_in_words = total_in_words.replace('and', 'and ')
+
     order_item_totals = zip(order_items, item_totals)
 
-    # Pass necessary values to the template
     context = {
         'order': order,
-        'order_item_totals': order_item_totals,  # Pass zipped list
+        'order_item_totals': order_item_totals,
         'subtotal': subtotal,
-        'vat_rate': VAT_RATE,
+        'vat_rate': VAT_RATE * 100,  # to display 15%
         'vat_amount': vat_amount,
-        'total_amount': total_amount,  # Pass the calculated total amount
+        'total_amount': total_amount,
+        'total_in_words': total_in_words.title(),
     }
 
     html_string = render_to_string('invoice_template.html', context)
@@ -129,7 +145,6 @@ def generate_invoice(request, order_id):
             response.write(pdf.read())
 
     return response
-# Pagination class (optional but recommended for large datasets)
 
 class OrderPagination(PageNumberPagination):
     page_size = 10  # You can adjust the page size
@@ -163,6 +178,75 @@ def get_orders(request):
 
     return paginator.get_paginated_response(serializer.data)
 
+User = get_user_model()
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def dashboard_summary(request):
+    start_date = request.query_params.get('start_date')
+    end_date = request.query_params.get('end_date')
+
+    orders = Order.objects.all()
+    completed_orders = orders.filter(status='completed')
+    
+    if start_date and end_date:
+        try:
+            start = datetime.strptime(start_date, "%Y-%m-%d")
+            end = datetime.strptime(end_date, "%Y-%m-%d")
+            orders = orders.filter(order_date__date__range=(start, end))
+            completed_orders = completed_orders.filter(order_date__date__range=(start, end))
+        except ValueError:
+            return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+
+    total_orders = orders.count()
+    completed_order_count = completed_orders.count()
+    pending_order_count = orders.filter(status='pending').count()
+    reversed_order_count = orders.filter(status='reversed').count()
+
+    total_revenue = completed_orders.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+    estimated_profit = total_revenue * Decimal("0.20")
+
+    total_customers = Customer.objects.count()
+    total_manufacturers = Manufacturer.objects.count()
+    total_products = Product.objects.count()
+    low_stock_products = Product.objects.filter(quantity__lt=10).count()
+    total_categories = Category.objects.count()
+
+    total_users = User.objects.count()
+    active_users = User.objects.filter(is_active=True).count()
+
+    inactive_users = User.objects.filter(is_active=False).count()
+    # user_roles = User.objects.values('role__name').annotate(count=Count('id'))
+
+    return Response({
+        "orders": {
+            "total": total_orders,
+            "completed": completed_order_count,
+            "pending": pending_order_count,
+            "reversed": reversed_order_count,
+            "revenue": f"{total_revenue:.2f}",
+            "profit": f"{estimated_profit:.2f}",
+        },
+        "customers": {
+            "total": total_customers,
+        },
+        "manufacturers": {
+            "total": total_manufacturers,
+        },
+        "products": {
+            "total": total_products,
+            "low_stock": low_stock_products,
+        },
+        "categories": {
+            "total": total_categories,
+        },
+        "users": {
+            "total": total_users,
+            "active": active_users,
+            "inactive": inactive_users,
+            # "by_role": user_roles,
+        }
+    })
 @api_view(['PATCH'])
 @permission_classes([permissions.IsAuthenticated])
 def complete_order(request, order_id):
